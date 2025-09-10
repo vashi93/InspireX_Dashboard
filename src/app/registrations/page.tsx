@@ -270,8 +270,11 @@ export default function RegistrationsPage() {
   const vardhamanParticipants = participants.filter(
     (p) => p.plan && p.plan.toLowerCase().includes("vardhaman")
   );
+  const spotParticipants = participants.filter(
+    (p) => p.plan && p.plan.toLowerCase() === "spot"
+  );
   const otherParticipants = participants.filter(
-    (p) => !p.plan || !p.plan.toLowerCase().includes("vardhaman")
+    (p) => !p.plan || (!p.plan.toLowerCase().includes("vardhaman") && p.plan.toLowerCase() !== "spot")
   );
 
   if (loading) {
@@ -284,11 +287,12 @@ export default function RegistrationsPage() {
 
   return (
     <div className="p-4 md:p-8">
-      <h1 className="text-2xl font-bold mb-4">Registrations by College</h1>
+      <h1 className="text-2xl font-bold mb-4">Registrations by Type</h1>
       <Tabs defaultValue="vardhaman">
-        <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
+        <TabsList className="grid w-full grid-cols-3 md:w-[600px]">
           <TabsTrigger value="vardhaman">Vardhaman College</TabsTrigger>
           <TabsTrigger value="other">Other Colleges</TabsTrigger>
+          <TabsTrigger value="spot">Spot Registrations</TabsTrigger>
         </TabsList>
         <TabsContent value="vardhaman">
           <Card>
@@ -322,7 +326,25 @@ export default function RegistrationsPage() {
             </CardContent>
           </Card>
         </TabsContent>
+         <TabsContent value="spot">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Spot Registrations
+              </CardTitle>
+               <div className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-accent" />
+                  <span className="text-2xl font-bold text-primary">{spotParticipants.length}</span>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <ParticipantTable participants={spotParticipants} refreshParticipants={fetchParticipants} />
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
 }
+
+    

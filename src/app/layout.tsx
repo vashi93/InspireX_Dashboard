@@ -1,9 +1,11 @@
+
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { SidebarProvider, Sidebar, SidebarInset, SidebarHeader, SidebarTrigger } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/app-sidebar';
 import { Club } from 'lucide-react';
+import { AuthProvider } from '@/context/AuthContext';
 
 export const metadata: Metadata = {
   title: 'INSPIRE X Dashboard',
@@ -23,6 +25,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
+       <AuthProvider>
         <SidebarProvider>
           <Sidebar>
             <AppSidebar />
@@ -38,6 +41,7 @@ export default function RootLayout({
             {children}
           </SidebarInset>
         </SidebarProvider>
+        </AuthProvider>
         <Toaster />
       </body>
     </html>

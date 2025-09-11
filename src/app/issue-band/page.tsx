@@ -24,6 +24,15 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -44,6 +53,7 @@ type Participant = {
   roll_no?: string;
   phone: string;
   isIssued: boolean;
+  plan?: string;
 };
 
 export default function IssueBandPage() {
@@ -52,6 +62,7 @@ export default function IssueBandPage() {
   const [participant, setParticipant] = useState<Participant | null>(null);
   const [multipleMatches, setMultipleMatches] = useState<Participant[]>([]);
   const [showSelectionDialog, setShowSelectionDialog] = useState(false);
+  const [showLunchTokenDialog, setShowLunchTokenDialog] = useState(false);
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isAdvancedSearch, setIsAdvancedSearch] = useState(false);
@@ -82,9 +93,7 @@ export default function IssueBandPage() {
       const matches: Omit<Participant, 'isIssued'>[] = [];
       const uniqueMatchIds = new Set<string>();
 
-      // Build the base query for exact matches
       const queries = [where('roll_no', '==', normalizedSearchTerm)];
-      // If advanced search is on, also check the phone field directly
       if (isAdvancedSearch) {
           queries.push(where('phone', '==', searchTerm));
       }
@@ -100,7 +109,6 @@ export default function IssueBandPage() {
           }
       });
       
-      // Fallback search for partial matches on Doc ID or last 4 of roll no
       if (matches.length === 0) {
           const allDocsSnapshot = await getDocs(registrationsCol);
           allDocsSnapshot.forEach(docSnap => {
@@ -111,15 +119,12 @@ export default function IssueBandPage() {
               
               let isMatch = false;
 
-              // Full match on Document ID
               if (docId === normalizedSearchTerm) {
                   isMatch = true;
               }
-              // Partial match on last 4 digits of roll_no field
               else if (searchTerm.length >= 4 && data.roll_no && data.roll_no.toUpperCase().endsWith(normalizedSearchTerm)) {
                  isMatch = true;
               }
-              // Partial match on last 4 digits of Document ID
               else if (searchTerm.length >= 4 && docId.endsWith(normalizedSearchTerm)) {
                  isMatch = true;
               }
@@ -151,12 +156,11 @@ export default function IssueBandPage() {
     }
   };
 
-  const handleMarkAsIssued = async () => {
+  const handleIssue = async () => {
     if (!participant) return;
     setLoading(true);
     try {
       const issuedDocRef = doc(db, "issued", participant.id);
-      
       const { isIssued, ...participantData } = participant;
 
       await setDoc(issuedDocRef, {
@@ -179,8 +183,21 @@ export default function IssueBandPage() {
       });
     } finally {
       setLoading(false);
+      setShowLunchTokenDialog(false);
     }
   };
+
+  const handleMarkAsIssuedClick = () => {
+     if (!participant) return;
+     const plan = participant.plan || '';
+     const isOtherCollege = !plan.toLowerCase().includes("vardhaman") && plan.toLowerCase() !== "spot";
+
+    if (isOtherCollege) {
+      setShowLunchTokenDialog(true);
+    } else {
+      handleIssue();
+    }
+  }
 
   const handleSelectMatch = () => {
     const selected = multipleMatches.find(p => p.id === selectedMatchId);
@@ -248,6 +265,7 @@ export default function IssueBandPage() {
                   <p><strong>Year:</strong> {participant.year_of_study}</p>
                   <p><strong>Roll No:</strong> {participant.roll_no || "N/A"}</p>
                   <p><strong>Phone:</strong> {participant.phone}</p>
+                  <p><strong>Plan:</strong> {participant.plan || "N/A"}</p>
                   <div className="flex items-center gap-2 pt-2">
                     <strong>Status:</strong>
                     {participant.isIssued ? (
@@ -263,7 +281,7 @@ export default function IssueBandPage() {
                 </div>
                 <Button
                   className="w-full mt-6"
-                  onClick={handleMarkAsIssued}
+                  onClick={handleMarkAsIssuedClick}
                   disabled={loading || participant.isIssued}
                 >
                   {participant.isIssued ? "Already Issued" : "Mark as Issued"}
@@ -299,6 +317,22 @@ export default function IssueBandPage() {
             </Button>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={showLunchTokenDialog} onOpenChange={setShowLunchTokenDialog}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>Reminder</AlertDialogTitle>
+            <AlertDialogDescription>
+                Give lunch token to the participant.
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogAction onClick={handleIssue} disabled={loading}>
+                {loading ? <Loader2 className="animate-spin" /> : "OK"}
+            </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

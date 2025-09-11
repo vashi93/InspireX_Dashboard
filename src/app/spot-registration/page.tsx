@@ -33,6 +33,7 @@ export default function SpotRegistrationPage() {
     const [year, setYear] = useState("");
     const [phone, setPhone] = useState("");
     const [rollNo, setRollNo] = useState("");
+    const [plan, setPlan] = useState("spot");
     const [hasRollNo, setHasRollNo] = useState(true);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -44,12 +45,13 @@ export default function SpotRegistrationPage() {
         setYear("");
         setPhone("");
         setRollNo("");
+        setPlan("spot");
         setError(null);
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const requiredFields = [name, email, year, phone];
+        const requiredFields = [name, email, year, phone, plan];
         if (hasRollNo) {
             requiredFields.push(rollNo);
         }
@@ -65,7 +67,6 @@ export default function SpotRegistrationPage() {
         const docRef = doc(db, "registrations", docId);
 
         try {
-            // Check if a registration with this ID already exists
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
                 setError(`A registration with this ${hasRollNo ? "Roll Number" : "Phone Number"} already exists.`);
@@ -81,7 +82,7 @@ export default function SpotRegistrationPage() {
                 valid: true,
                 createdAt: serverTimestamp(),
                 validatedAt: serverTimestamp(),
-                plan: "spot",
+                plan: plan,
             };
 
             if (hasRollNo) {
@@ -178,6 +179,19 @@ export default function SpotRegistrationPage() {
                                     <SelectItem value="4th Year">4th Year</SelectItem>
                                     <SelectItem value="Faculty">Faculty</SelectItem>
                                     <SelectItem value="Other">Other</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                         <div className="space-y-2">
+                             <Label htmlFor="plan">Plan</Label>
+                             <Select onValueChange={setPlan} value={plan} disabled={loading} required>
+                                <SelectTrigger id="plan">
+                                    <SelectValue placeholder="Select plan..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="spot">Spot</SelectItem>
+                                    <SelectItem value="other college">Other College</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>

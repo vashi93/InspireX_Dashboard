@@ -24,7 +24,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const passwords: Record<string, string> = {
   admin: "admin#cc",
-  spot: "spot@cc",
+  spot: "spot#cc",
   entry: "entry@cc",
 };
 

@@ -1,5 +1,5 @@
 # INSPIRE X Dashboard
-[![Ask DeepWiki](https://devin.ai/assets/askdeepwiki.png)](https://deepwiki.com/vashi93/InspireX_Dashboard)
+
 
 INSPIRE X Dashboard is a comprehensive, role-based event management system built to handle registrations, payment validation, and attendee check-in for the INSPIRE X event. Developed with Next.js and Firebase, it provides a real-time, responsive interface for event administrators and volunteers.
 
